@@ -1,0 +1,40 @@
+<%- include("partials/head", { title, pageId }) %>
+<%- include("partials/nav", { pageId }) %>
+
+<main class="auth-wrap">
+  <section class="auth-card">
+    <h1>Register</h1>
+    <p>Create analyst access to the OSINT console.</p>
+    <%- include("partials/flash") %>
+
+    <form method="POST" action="/register" class="stack-form">
+      <label for="username">Username</label>
+      <input id="username" name="username" type="text" minlength="3" maxlength="24" required />
+
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" required />
+
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" minlength="8" required />
+
+      <label for="confirmPassword">Confirm Password</label>
+      <input id="confirmPassword" name="confirmPassword" type="password" minlength="8" required />
+
+      <label>Choose Team Access</label>
+      <div class="team-choice">
+        <label class="team-option">
+          <input type="radio" name="team" value="red" required />
+          <span>Red Team Account</span>
+        </label>
+        <label class="team-option">
+          <input type="radio" name="team" value="blue" required />
+          <span>Blue Team Account</span>
+        </label>
+      </div>
+
+      <button class="btn primary" type="submit">Create Account</button>
+    </form>
+  </section>
+</main>
+
+<%- include("partials/footer") %>

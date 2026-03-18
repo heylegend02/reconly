@@ -1,0 +1,125 @@
+<%- include("partials/head", { title, pageId }) %>
+<%- include("partials/nav", { pageId }) %>
+
+<main class="workspace">
+  <section class="workspace-header">
+    <div>
+      <p class="eyebrow">Admin Only</p>
+      <h1>User Management</h1>
+      <p>View user details, password hashes, activity, and manage accounts.</p>
+    </div>
+  </section>
+
+  <%- include("partials/flash") %>
+
+  <section class="panel">
+    <h2>User Directory</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Password Hash</th>
+            <th>Created</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% users.forEach((user) => { %>
+          <tr>
+            <td><%= user.id %></td>
+            <td><%= user.username %></td>
+            <td><%= user.email %></td>
+            <td><%= user.role %></td>
+            <td class="hash-cell"><%= user.password_hash %></td>
+            <td><%= user.created_at %></td>
+            <td class="row-actions">
+              <a class="btn ghost compact" href="/admin/users?userId=<%= user.id %>">View / Edit</a>
+              <form method="POST" action="/admin/users/<%= user.id %>/delete">
+                <button class="btn danger compact" type="submit">Delete</button>
+              </form>
+            </td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <% if (selectedUser) { %>
+  <section class="grid two">
+    <article class="panel">
+      <h2>Edit User #<%= selectedUser.id %></h2>
+      <form method="POST" action="/admin/users/<%= selectedUser.id %>/update" class="stack-form">
+        <label>Username</label>
+        <input name="username" value="<%= selectedUser.username %>" required />
+
+        <label>Email</label>
+        <input name="email" type="email" value="<%= selectedUser.email %>" required />
+
+        <label>Role</label>
+        <select name="role" class="select-input" required>
+          <option value="red" <%= selectedUser.role === 'red' ? 'selected' : '' %>>Red Team</option>
+          <option value="blue" <%= selectedUser.role === 'blue' ? 'selected' : '' %>>Blue Team</option>
+          <option value="admin" <%= selectedUser.role === 'admin' ? 'selected' : '' %>>Admin</option>
+        </select>
+
+        <label>New Password (leave empty to keep current)</label>
+        <input name="newPassword" type="password" minlength="8" />
+
+        <button class="btn primary" type="submit">Save Changes</button>
+      </form>
+    </article>
+
+    <article class="panel">
+      <h2>User Details</h2>
+      <p><strong>ID:</strong> <%= selectedUser.id %></p>
+      <p><strong>Username:</strong> <%= selectedUser.username %></p>
+      <p><strong>Email:</strong> <%= selectedUser.email %></p>
+      <p><strong>Role:</strong> <%= selectedUser.role %></p>
+      <p><strong>Created:</strong> <%= selectedUser.created_at %></p>
+      <p><strong>Password Hash:</strong></p>
+      <pre><%= selectedUser.password_hash %></pre>
+    </article>
+  </section>
+
+  <section class="panel">
+    <h2>Activity: <%= selectedUser.username %></h2>
+    <% if (userActivity.length === 0) { %>
+    <p>No activity events found for this user.</p>
+    <% } else { %>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Timestamp</th>
+            <th>Action</th>
+            <th>Target</th>
+            <th>Status</th>
+            <th>Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% userActivity.forEach((log) => { %>
+          <tr>
+            <td><%= log.id %></td>
+            <td><%= log.created_at %></td>
+            <td><%= log.action %></td>
+            <td><%= log.target || '-' %></td>
+            <td><%= log.status %></td>
+            <td><%= log.details || '-' %></td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+    <% } %>
+  </section>
+  <% } %>
+</main>
+
+<%- include("partials/footer") %>

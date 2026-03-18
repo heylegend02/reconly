@@ -1,0 +1,100 @@
+<%- include("partials/head", { title, pageId }) %>
+<%- include("partials/nav", { pageId }) %>
+
+<main class="workspace">
+  <section class="workspace-header">
+    <div>
+      <p class="eyebrow">Admin Only</p>
+      <h1>Audit Logs</h1>
+      <p>Full activity trace across auth, red-team, and blue-team actions.</p>
+    </div>
+  </section>
+
+  <%- include("partials/flash") %>
+
+  <section class="panel">
+    <div class="toolbar">
+      <form method="GET" action="/admin/logs" class="stack-form inline">
+        <label for="limit">Rows</label>
+        <input id="limit" name="limit" type="number" min="10" max="1000" value="<%= limit %>" />
+        <button class="btn primary" type="submit">Refresh</button>
+      </form>
+      <form method="POST" action="/admin/logs/clear" onsubmit="return confirm('Clear all logs? This action cannot be undone.');">
+        <input type="hidden" name="limit" value="<%= limit %>" />
+        <button class="btn danger" type="submit">Clear All Logs</button>
+      </form>
+    </div>
+    <p><%= logs.length %> entries loaded.</p>
+  </section>
+
+  <section class="panel">
+    <h2>User Registry</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Created</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% users.forEach((user) => { %>
+          <tr>
+            <td><%= user.id %></td>
+            <td><%= user.username %></td>
+            <td><%= user.email %></td>
+            <td><%= user.role %></td>
+            <td><%= user.created_at %></td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Activity Events</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Timestamp</th>
+            <th>User</th>
+            <th>Role</th>
+            <th>Action</th>
+            <th>Target</th>
+            <th>Status</th>
+            <th>Details</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% logs.forEach((log) => { %>
+          <tr>
+            <td><%= log.id %></td>
+            <td><%= log.created_at %></td>
+            <td><%= log.username || '-' %></td>
+            <td><%= log.role || '-' %></td>
+            <td><%= log.action %></td>
+            <td><%= log.target || '-' %></td>
+            <td><%= log.status %></td>
+            <td><%= log.details || '-' %></td>
+            <td class="row-actions">
+              <form method="POST" action="/admin/logs/<%= log.id %>/delete" onsubmit="return confirm('Delete this log entry?');">
+                <input type="hidden" name="limit" value="<%= limit %>" />
+                <button class="btn danger compact" type="submit">Delete</button>
+              </form>
+            </td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<%- include("partials/footer") %>

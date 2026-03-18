@@ -1,0 +1,39 @@
+<%- include("partials/head", { title, pageId }) %>
+<%- include("partials/nav", { pageId }) %>
+
+<main class="landing-wrap">
+  <section class="hero">
+    <p class="eyebrow">Web-Based Red + Blue OSINT Platform</p>
+    <h1>Unified Intelligence Workbench for Recon and Defense</h1>
+    <p class="lead">
+      Run offensive reconnaissance pipelines and defensive exposure monitoring from one interface with full audit logging.
+    </p>
+    <div class="hero-actions">
+      <a class="btn primary" href="/register">Create Account</a>
+      <a class="btn ghost" href="/login">Sign In</a>
+    </div>
+  </section>
+
+  <section class="grid two">
+    <article class="panel red-border">
+      <h2>Red Team Modules</h2>
+      <ul>
+        <li>Target enumeration and infrastructure mapping</li>
+        <li>Username, email, and breach intelligence</li>
+        <li>Metadata extraction and leak hunting</li>
+        <li>Automated recon pipeline</li>
+      </ul>
+    </article>
+    <article class="panel blue-border">
+      <h2>Blue Team Modules</h2>
+      <ul>
+        <li>Attack surface baselining and drift alerts</li>
+        <li>Threat intelligence lookups (VT/AbuseIPDB)</li>
+        <li>Credential monitoring and brand hunting</li>
+        <li>Vulnerability intelligence and alert center</li>
+      </ul>
+    </article>
+  </section>
+</main>
+
+<%- include("partials/footer") %>

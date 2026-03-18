@@ -1,0 +1,69 @@
+<%- include("partials/head", { title, pageId }) %>
+<%- include("partials/nav", { pageId }) %>
+
+<main class="workspace">
+  <section class="workspace-header">
+    <div>
+      <p class="eyebrow">Operational View</p>
+      <h1>OSINT Dashboard</h1>
+      <p>Run red-team reconnaissance and blue-team monitoring workflows from a single portal.</p>
+    </div>
+  </section>
+
+  <%- include("partials/flash") %>
+  <% if (error) { %>
+  <div class="flash error"><%= error %></div>
+  <% } %>
+
+  <% if (user.role === 'admin' && stats) { %>
+  <section class="metric-grid">
+    <article class="metric">
+      <span>Total Users</span>
+      <strong><%= stats.users %></strong>
+    </article>
+    <article class="metric">
+      <span>Activity Logs</span>
+      <strong><%= stats.logs %></strong>
+    </article>
+    <article class="metric">
+      <span>Open Alerts</span>
+      <strong><%= stats.openAlerts %></strong>
+    </article>
+    <article class="metric">
+      <span>Monitored Assets</span>
+      <strong><%= stats.monitoredAssets %></strong>
+    </article>
+  </section>
+  <% } %>
+
+  <section class="grid two">
+    <% const canUseRed = user.role === 'red' || user.role === 'admin'; %>
+    <% const canUseBlue = user.role === 'blue' || user.role === 'admin'; %>
+    <% if (canUseRed) { %>
+    <article class="panel red-border">
+      <h2>Red Team</h2>
+      <p>Target discovery, identity profiling, leak hunting, metadata extraction, and automated recon pipelines.</p>
+      <a class="btn red-btn" href="/red-team">Open Red Team Console</a>
+    </article>
+    <% } %>
+    <% if (canUseBlue) { %>
+    <article class="panel blue-border">
+      <h2>Blue Team</h2>
+      <p>Attack surface monitoring, threat intel enrichment, brand/credential monitoring, alerting, and vuln intelligence.</p>
+      <a class="btn blue-btn" href="/blue-team">Open Blue Team Console</a>
+    </article>
+    <% } %>
+    <% if (user.role === 'admin') { %>
+    <article class="panel">
+      <h2>Administration</h2>
+      <p>Manage users, reset credentials, remove accounts, and inspect audit logs.</p>
+      <div class="hero-actions">
+        <a class="btn primary" href="/admin/users">User Management</a>
+        <a class="btn ghost" href="/admin/logs">Activity Logs</a>
+      </div>
+    </article>
+    <% } %>
+  </section>
+</main>
+
+<%- include("partials/footer") %>

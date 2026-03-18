@@ -1,0 +1,87 @@
+<%- include("partials/head", { title, pageId }) %>
+<%- include("partials/nav", { pageId }) %>
+
+<main class="workspace">
+  <section class="workspace-header red-accent">
+    <div>
+      <p class="eyebrow">Offensive Reconnaissance</p>
+      <h1>Red Team OSINT Console</h1>
+      <p>Simulate attacker intelligence gathering and automate reconnaissance workflows.</p>
+    </div>
+  </section>
+
+  <%- include("partials/flash") %>
+
+  <section class="ops-layout">
+    <aside class="function-sidebar red-side">
+      <h2>Red Team</h2>
+      <p>Full OSINT Modules</p>
+      <nav class="function-list">
+        <% modules.forEach((module, idx) => { %>
+        <% const isActiveNav = activeModule ? activeModule.key === module.key : idx === 0; %>
+        <button
+          type="button"
+          class="function-nav-link <%= isActiveNav ? 'active-link' : '' %>"
+          data-target="rt-<%= module.key %>"
+          data-module-key="<%= module.key %>"
+          aria-pressed="<%= isActiveNav ? 'true' : 'false' %>"
+        ><%= module.title %></button>
+        <% }) %>
+      </nav>
+    </aside>
+
+    <div class="ops-content" data-active-section="<%= activeSection || ('rt-' + modules[0].key) %>">
+      <section class="tool-grid">
+        <% modules.forEach((module, idx) => { %>
+        <% const isActiveModule = activeModule && activeModule.key === module.key; %>
+        <article
+          id="rt-<%= module.key %>"
+          class="panel full scroll-target function-section module-panel"
+          <%= isActiveModule ? '' : 'hidden' %>
+        >
+          <h2><%= module.title %></h2>
+          <p class="module-desc"><%= module.description %></p>
+
+          <ul class="capability-list">
+            <% module.capabilities.forEach((cap) => { %>
+            <li><%= cap %></li>
+            <% }) %>
+          </ul>
+
+          <form method="POST" action="/red-team/run" enctype="multipart/form-data" class="stack-form">
+            <input type="hidden" name="moduleKey" value="<%= module.key %>" />
+            <label><%= module.targetLabel %></label>
+            <input
+              name="target"
+              placeholder="<%= module.targetPlaceholder %>"
+              <%= module.requiresFile ? '' : 'required' %>
+            />
+            <label><%= module.auxLabel %></label>
+            <textarea name="auxInput" rows="3" placeholder="<%= module.auxPlaceholder %>"></textarea>
+            <% if (module.requiresFile) { %>
+            <label>Upload Artifact (image/pdf/docx)</label>
+            <input type="file" name="artifact" required />
+            <% } %>
+            <button class="btn red-btn" type="submit">Run <%= module.title %></button>
+          </form>
+
+          <section class="module-output">
+            <h3>Execution Output</h3>
+            <% if (isActiveModule && result) { %>
+            <%- formatResultHtml(result) %>
+            <details class="raw-json">
+              <summary>View Raw JSON</summary>
+              <pre><%= JSON.stringify(result, null, 2) %></pre>
+            </details>
+            <% } else { %>
+            <pre>Run this tool to view results.</pre>
+            <% } %>
+          </section>
+        </article>
+        <% }) %>
+      </section>
+    </div>
+  </section>
+</main>
+
+<%- include("partials/footer") %>

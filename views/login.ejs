@@ -1,0 +1,27 @@
+<%- include("partials/head", { title, pageId }) %>
+<%- include("partials/nav", { pageId }) %>
+
+<main class="auth-wrap">
+  <section class="auth-card">
+    <h1>Login</h1>
+    <p>Access the OSINT command center.</p>
+    <%- include("partials/flash") %>
+
+    <form method="POST" action="/login" class="stack-form">
+      <label for="identifier">Username or Email</label>
+      <input id="identifier" name="identifier" type="text" required />
+
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" required />
+
+      <button class="btn primary" type="submit">Sign In</button>
+    </form>
+
+    <p class="small">
+      Need an account?
+      <a href="/register">Register here</a>
+    </p>
+  </section>
+</main>
+
+<%- include("partials/footer") %>

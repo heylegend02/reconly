@@ -1,0 +1,36 @@
+<header class="topbar" <%= user ? 'data-authenticated-user="true"' : '' %>>
+  <div class="topbar-inner">
+    <div class="topbar-left">
+      <span class="nav-datetime" data-live-datetime>--</span>
+    </div>
+
+    <div class="topbar-center">
+      <a href="/" class="logo">Reconly</a>
+    </div>
+
+    <nav class="nav-links">
+      <% if (user) { %>
+        <a href="/dashboard" class="<%= pageId === 'dashboard' ? 'active' : '' %>">Dashboard</a>
+
+        <% if (user.role === 'red' || user.role === 'admin') { %>
+          <a href="/red-team" class="<%= pageId === 'red-team' ? 'active red' : 'red' %>">Red Team</a>
+        <% } %>
+
+        <% if (user.role === 'blue' || user.role === 'admin') { %>
+          <a href="/blue-team" class="<%= pageId === 'blue-team' ? 'active blue' : 'blue' %>">Blue Team</a>
+        <% } %>
+
+        <% if (user.role === 'admin') { %>
+          <a href="/admin/users" class="<%= pageId === 'admin-users' ? 'active' : '' %>">Users</a>
+          <a href="/admin/logs" class="<%= pageId === 'admin-logs' ? 'active' : '' %>">Logs</a>
+        <% } %>
+
+        <span class="user-pill"><%= user.username %> (<%= user.role %>)</span>
+        <a href="/logout" class="logout">Logout</a>
+      <% } else { %>
+        <a href="/login" class="<%= pageId === 'login' ? 'active' : '' %>">Login</a>
+        <a href="/register" class="<%= pageId === 'register' ? 'active' : '' %>">Register</a>
+      <% } %>
+    </nav>
+  </div>
+</header>
