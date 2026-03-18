@@ -301,6 +301,7 @@ async function enumerateSubdomainsFromCt(domain) {
   const sourceStatus = [];
 
   const crt = await safeAxiosGet(`https://crt.sh/?q=%25.${clean}&output=json`, {
+    timeout: 15000,
     headers: { "User-Agent": "osint-tool/1.0" },
   });
   if (crt.ok && crt.status < 400 && Array.isArray(crt.data)) {
@@ -323,7 +324,9 @@ async function enumerateSubdomainsFromCt(domain) {
     });
   }
 
-  const hackerTarget = await safeAxiosGet(`https://api.hackertarget.com/hostsearch/?q=${encodeURIComponent(clean)}`);
+  const hackerTarget = await safeAxiosGet(`https://api.hackertarget.com/hostsearch/?q=${encodeURIComponent(clean)}`, {
+    timeout: 10000,
+  });
   if (hackerTarget.ok && hackerTarget.status < 400 && typeof hackerTarget.data === "string") {
     const before = subdomainSet.size;
     String(hackerTarget.data)
@@ -346,7 +349,9 @@ async function enumerateSubdomainsFromCt(domain) {
     });
   }
 
-  const bufferOver = await safeAxiosGet(`https://dns.bufferover.run/dns?q=.${encodeURIComponent(clean)}`);
+  const bufferOver = await safeAxiosGet(`https://dns.bufferover.run/dns?q=.${encodeURIComponent(clean)}`, {
+    timeout: 10000,
+  });
   if (bufferOver.ok && bufferOver.status < 400 && bufferOver.data) {
     const before = subdomainSet.size;
     const fdns = Array.isArray(bufferOver.data.FDNS_A) ? bufferOver.data.FDNS_A : [];
@@ -375,26 +380,93 @@ async function enumerateSubdomainsFromCt(domain) {
   };
 }
 
-async function reverseIpLookup(ip) {
+function dedupeAndNormalizeDomains(values = []) {
+  const seen = new Set();
+  const result = [];
+
+  values.forEach((item) => {
+    const value = String(item || "").trim().toLowerCase();
+    if (!value || !isDomain(value)) {
+      return;
+    }
+    if (seen.has(value)) {
+      return;
+    }
+    seen.add(value);
+    result.push(value);
+  });
+
+  return result;
+}
+
+async function reverseIpLookup(ip, options = {}) {
+  const targetDomain = normalizeDomain(options.targetDomain || "");
+  const maxDomains =
+    Number.isInteger(options.maxDomains) && options.maxDomains > 0 ? options.maxDomains : 60;
   const response = await safeAxiosGet(`https://api.hackertarget.com/reverseiplookup/?q=${encodeURIComponent(ip)}`);
   if (!response.ok || response.status >= 400) {
     return {
       ip,
       domains: [],
       error: providerErrorLabel(response, "Reverse IP provider unavailable."),
+      summary: {
+        totalDiscovered: 0,
+        relatedToTarget: 0,
+        returned: 0,
+        truncated: false,
+        scope: "none",
+        likelySharedHosting: false,
+      },
     };
   }
 
   const text = String(response.data || "");
   if (text.toLowerCase().includes("error")) {
-    return { ip, domains: [], error: text };
+    return {
+      ip,
+      domains: [],
+      error: text,
+      summary: {
+        totalDiscovered: 0,
+        relatedToTarget: 0,
+        returned: 0,
+        truncated: false,
+        scope: "none",
+        likelySharedHosting: false,
+      },
+    };
   }
 
-  const domains = text
+  const discoveredDomains = dedupeAndNormalizeDomains(
+    text
     .split("\n")
     .map((line) => line.trim())
-    .filter(Boolean);
-  return { ip, domains };
+    .filter(Boolean)
+  );
+
+  const relatedDomains = targetDomain
+    ? discoveredDomains.filter((host) => host === targetDomain || host.endsWith(`.${targetDomain}`))
+    : [];
+
+  const preferredPool = relatedDomains.length > 0 ? relatedDomains : discoveredDomains;
+  const domains = preferredPool.slice(0, maxDomains);
+  const likelySharedHosting = discoveredDomains.length >= 80;
+
+  return {
+    ip,
+    domains,
+    summary: {
+      totalDiscovered: discoveredDomains.length,
+      relatedToTarget: relatedDomains.length,
+      returned: domains.length,
+      truncated: preferredPool.length > maxDomains,
+      scope: relatedDomains.length > 0 ? "related-only" : "all-domains",
+      likelySharedHosting,
+    },
+    note: likelySharedHosting
+      ? "IP appears to be on shared hosting; many reverse-IP domains may be unrelated."
+      : null,
+  };
 }
 
 function cloudFingerprintFromHost(hostname = "") {

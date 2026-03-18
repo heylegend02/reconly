@@ -397,7 +397,7 @@ async function infrastructureMapping(domainInput) {
 
   const reverse = [];
   for (const ip of resolvedIps.ips.slice(0, 3)) {
-    reverse.push(await reverseIpLookup(ip));
+    reverse.push(await reverseIpLookup(ip, { targetDomain: domain, maxDomains: 60 }));
   }
 
   return {
@@ -407,6 +407,16 @@ async function infrastructureMapping(domainInput) {
     subdomains,
     subdomainToIp,
     reverseIp: reverse,
+    reverseIpSummary: reverse.map((item) => ({
+      ip: item.ip,
+      totalDiscovered: item.summary?.totalDiscovered || 0,
+      relatedToTarget: item.summary?.relatedToTarget || 0,
+      returned: item.summary?.returned || 0,
+      scope: item.summary?.scope || "none",
+      truncated: Boolean(item.summary?.truncated),
+      likelySharedHosting: Boolean(item.summary?.likelySharedHosting),
+      error: item.error || null,
+    })),
     cloudAssets: cloud,
   };
 }
